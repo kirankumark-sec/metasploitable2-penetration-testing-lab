@@ -1,91 +1,404 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metasploitable2 Penetration Testing Lab</title>
-  <meta name="description" content="Professional walkthrough and documentation hub for Metasploitable2 penetration testing services." />
+  <title>Metasploitable 2 — Penetration Testing Lab</title>
+  <meta name="description" content="Professional penetration testing documentation hub for Metasploitable2 — service exploitation, vulnerability analysis, and privilege escalation walkthroughs." />
   <link rel="stylesheet" href="./assets/css/style.css" />
 </head>
 <body>
-  <header class="site-header">
-    <div class="container nav">
-      <div class="brand">
-        <span class="brand-badge">M2</span>
-        <div>
-          <h1>Metasploitable2 Lab</h1>
-          <p>Penetration Testing Knowledge Hub</p>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="./index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text">
+        <h1>Metasploitable 2</h1>
+        <p>Penetration Testing Lab</p>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link active" href="#overview">Overview</a>
+      <a class="nav-link" href="#scan">Nmap Scan</a>
+      <a class="nav-link" href="#modules">Modules</a>
+      <a class="nav-link" href="#about">About</a>
+    </div>
+    <a class="nav-btn btn" href="#modules">Explore Modules →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-label">
+      <span class="live-dot"></span> Authorized Lab Environment
+    </div>
+    <h2 class="fade-up">Metasploitable 2<br>Penetration Testing Lab</h2>
+    <p class="hero-sub fade-up-2">
+      A comprehensive walkthrough of exploiting Metasploitable2 — an intentionally vulnerable Linux VM.
+      Covers service enumeration, vulnerability exploitation, and privilege escalation across 9 attack surfaces.
+    </p>
+    <div class="hero-actions fade-up-3">
+      <a href="#modules" class="btn btn-primary">Browse Modules</a>
+      <a href="#scan" class="btn btn-outline">View Nmap Results</a>
+    </div>
+    <div class="hero-stats fade-up-4">
+      <div class="stat"><span class="stat-num red">9</span><span class="stat-label">Services Exploited</span></div>
+      <div class="stat"><span class="stat-num green">4</span><span class="stat-label">Root Shells Obtained</span></div>
+      <div class="stat"><span class="stat-num cyan">5</span><span class="stat-label">CVEs Leveraged</span></div>
+      <div class="stat"><span class="stat-num" style="color:var(--amber)">6</span><span class="stat-label">Tools Used</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="overview" class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <p class="section-label">Environment</p>
+        <h3>Lab Configuration</h3>
+      </div>
+    </div>
+    <div class="env-grid">
+      <div class="env-card">
+        <div class="env-card-label">Target Machine</div>
+        <div class="env-card-value">Metasploitable 2</div>
+        <div class="env-card-sub">Intentionally Vulnerable Linux VM</div>
+      </div>
+      <div class="env-card">
+        <div class="env-card-label">Attacker OS</div>
+        <div class="env-card-value">Kali Linux</div>
+        <div class="env-card-sub">Host OS / Attacker Machine</div>
+      </div>
+      <div class="env-card">
+        <div class="env-card-label">VM Software</div>
+        <div class="env-card-value">VirtualBox</div>
+        <div class="env-card-sub">Host-only Adapter Network</div>
+      </div>
+      <div class="env-card">
+        <div class="env-card-label">Network Isolation</div>
+        <div class="env-card-value">Isolated Subnet</div>
+        <div class="env-card-sub">Attacker &amp; Target on same subnet</div>
+      </div>
+    </div>
+
+    <p class="section-label" style="margin-bottom:.5rem">Tools Used</p>
+    <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2rem">
+      <span class="pill"><strong>Nmap</strong></span>
+      <span class="pill"><strong>Metasploit Framework</strong></span>
+      <span class="pill"><strong>Hydra</strong></span>
+      <span class="pill"><strong>Medusa</strong></span>
+      <span class="pill"><strong>Netcat</strong></span>
+      <span class="pill"><strong>Enum4linux</strong></span>
+      <span class="pill"><strong>Telnet</strong></span>
+    </div>
+  </div>
+</section>
+
+<!-- NMAP SCAN -->
+<section id="scan" class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <p class="section-label">Reconnaissance</p>
+        <h3>Nmap Full Port Scan</h3>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">bash</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre class="code-block"><span class="cmd">sudo nmap</span> <span class="kw">-sV -v -T5 -p-</span> <span class="str">&lt;target-ip&gt;</span></pre>
+    </div>
+
+    <div class="screenshot-wrap" title="Click to enlarge">
+      <div class="screenshot-bar">
+        <div class="terminal-dot dot-r"></div>
+        <div class="terminal-dot dot-y"></div>
+        <div class="terminal-dot dot-g"></div>
+        <span class="screenshot-caption">Full Nmap Service Scan — Metasploitable 2</span>
+      </div>
+      <img src="./Full_Nmap_Scan.png" alt="Full Nmap Scan" loading="lazy" />
+    </div>
+
+    <div class="terminal-block" style="margin-top:1.5rem">
+      <div class="terminal-bar">
+        <div class="terminal-dot dot-r"></div>
+        <div class="terminal-dot dot-y"></div>
+        <div class="terminal-dot dot-g"></div>
+        <span class="terminal-title">Open Ports — Metasploitable 2</span>
+      </div>
+      <div class="terminal-body">
+        <table>
+          <thead>
+            <tr><th>Port</th><th>Protocol</th><th>Service</th><th>Version</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="t-port">21/tcp</td><td>FTP</td>
+              <td class="t-svc">vsftpd</td>
+              <td class="t-ver">2.3.4</td>
+              <td><span class="badge badge-critical">Critical</span></td>
+            </tr>
+            <tr>
+              <td class="t-port">22/tcp</td><td>SSH</td>
+              <td class="t-svc">OpenSSH</td>
+              <td class="t-ver">4.7p1 Debian</td>
+              <td><span class="badge badge-high">High</span></td>
+            </tr>
+            <tr>
+              <td class="t-port">23/tcp</td><td>Telnet</td>
+              <td class="t-svc">Linux telnetd</td>
+              <td class="t-ver">—</td>
+              <td><span class="badge badge-high">High</span></td>
+            </tr>
+            <tr>
+              <td class="t-port">25/tcp</td><td>SMTP</td>
+              <td class="t-svc">Postfix smtpd</td>
+              <td class="t-ver">—</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+            </tr>
+            <tr>
+              <td class="t-port">80/tcp</td><td>HTTP</td>
+              <td class="t-svc">Apache httpd</td>
+              <td class="t-ver">2.2.8</td>
+              <td><span class="badge badge-high">High</span></td>
+            </tr>
+            <tr>
+              <td class="t-port">139/445</td><td>SMB</td>
+              <td class="t-svc">Samba smbd</td>
+              <td class="t-ver">3.0.20</td>
+              <td><span class="badge badge-critical">Critical</span></td>
+            </tr>
+            <tr>
+              <td class="t-port">3306/tcp</td><td>MySQL</td>
+              <td class="t-svc">MySQL</td>
+              <td class="t-ver">5.0.51a-3ubuntu5</td>
+              <td><span class="badge badge-high">High</span></td>
+            </tr>
+            <tr>
+              <td class="t-port">5432/tcp</td><td>PostgreSQL</td>
+              <td class="t-svc">PostgreSQL</td>
+              <td class="t-ver">8.3.x</td>
+              <td><span class="badge badge-critical">Critical</span></td>
+            </tr>
+            <tr>
+              <td class="t-port">3632/tcp</td><td>distccd</td>
+              <td class="t-svc">GNU distccd</td>
+              <td class="t-ver">—</td>
+              <td><span class="badge badge-critical">Critical</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section id="modules" class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <p class="section-label">Attack Surface</p>
+        <h3>Service Modules</h3>
+      </div>
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="searchInput" type="text" placeholder="Search service, tool, CVE…" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="modules-grid">
+
+      <a class="module-card" href="./pages/ftp.html"
+         data-keywords="ftp vsftpd backdoor rce cve-2011-2532 metasploit netcat root shell">
+        <div class="card-top">
+          <div class="card-icon icon-critical">FTP</div>
+          <span class="badge badge-critical">Critical</span>
+        </div>
+        <div class="card-name">FTP — vsftpd 2.3.4</div>
+        <div class="card-port">Port 21/tcp &nbsp;·&nbsp; CVE-2011-2532</div>
+        <div class="card-desc">Backdoor injection in vsftpd triggers a root shell on port 6200 via a smiley-face username. No credentials needed.</div>
+        <div class="card-meta">
+          <span class="card-tool">⚡ Metasploit / Netcat</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="./pages/ssh.html"
+         data-keywords="ssh openssh brute force medusa hydra weak credentials privilege escalation root">
+        <div class="card-top">
+          <div class="card-icon icon-high">SSH</div>
+          <span class="badge badge-high">High</span>
+        </div>
+        <div class="card-name">SSH — OpenSSH 4.7p1</div>
+        <div class="card-port">Port 22/tcp &nbsp;·&nbsp; Weak Credentials</div>
+        <div class="card-desc">Default credentials expose SSH access. Bruteforce via Medusa, then sudo privilege escalation to root.</div>
+        <div class="card-meta">
+          <span class="card-tool">⚡ Medusa / Hydra</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="./pages/telnet.html"
+         data-keywords="telnet plaintext default credentials login sudo root privilege escalation">
+        <div class="card-top">
+          <div class="card-icon icon-high">TEL</div>
+          <span class="badge badge-high">High</span>
+        </div>
+        <div class="card-name">Telnet — Linux telnetd</div>
+        <div class="card-port">Port 23/tcp &nbsp;·&nbsp; Default Credentials</div>
+        <div class="card-desc">Legacy plaintext protocol with default creds. Login as msfadmin and escalate to root via sudo.</div>
+        <div class="card-meta">
+          <span class="card-tool">⚡ Telnet / Hydra</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="./pages/smtp.html"
+         data-keywords="smtp postfix vrfy expn user enumeration banner grabbing information disclosure">
+        <div class="card-top">
+          <div class="card-icon icon-medium">SMTP</div>
+          <span class="badge badge-medium">Medium</span>
+        </div>
+        <div class="card-name">SMTP — Postfix smtpd</div>
+        <div class="card-port">Port 25/tcp &nbsp;·&nbsp; Info Disclosure</div>
+        <div class="card-desc">SMTP banner and VRFY/EXPN commands expose valid system usernames without authentication.</div>
+        <div class="card-meta">
+          <span class="card-tool">⚡ Netcat / Metasploit</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="./pages/smb.html"
+         data-keywords="smb samba usermap script rce enum4linux null session metasploit root">
+        <div class="card-top">
+          <div class="card-icon icon-critical">SMB</div>
+          <span class="badge badge-critical">Critical</span>
+        </div>
+        <div class="card-name">SMB — Samba 3.0.20</div>
+        <div class="card-port">Port 139/445 &nbsp;·&nbsp; CVE-2007-2447</div>
+        <div class="card-desc">Username map script vulnerability allows unauthenticated remote code execution via a crafted username.</div>
+        <div class="card-meta">
+          <span class="card-tool">⚡ Metasploit</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="./pages/mysql.html"
+         data-keywords="mysql database default credentials root login credential dump scanner">
+        <div class="card-top">
+          <div class="card-icon icon-high">SQL</div>
+          <span class="badge badge-high">High</span>
+        </div>
+        <div class="card-name">MySQL — 5.0.51a</div>
+        <div class="card-port">Port 3306/tcp &nbsp;·&nbsp; Default Credentials</div>
+        <div class="card-desc">MySQL accessible with empty/default root password. Full database access, credential extraction possible.</div>
+        <div class="card-meta">
+          <span class="card-tool">⚡ Metasploit / mysql</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="./pages/postgresql.html"
+         data-keywords="postgresql postgres trust authentication rce udf payload metasploit remote shell">
+        <div class="card-top">
+          <div class="card-icon icon-critical">PG</div>
+          <span class="badge badge-critical">Critical</span>
+        </div>
+        <div class="card-name">PostgreSQL — Trust Auth</div>
+        <div class="card-port">Port 5432/tcp &nbsp;·&nbsp; No-Password Auth</div>
+        <div class="card-desc">Trust authentication allows passwordless login. UDF exploitation via postgres_payload yields remote shell.</div>
+        <div class="card-meta">
+          <span class="card-tool">⚡ Metasploit</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="./pages/http.html"
+         data-keywords="http apache dvwa mutillidae phpmyadmin sqli xss web nikto burp suite">
+        <div class="card-top">
+          <div class="card-icon icon-high">HTTP</div>
+          <span class="badge badge-high">High</span>
+        </div>
+        <div class="card-name">HTTP — Apache 2.2.8</div>
+        <div class="card-port">Port 80/tcp &nbsp;·&nbsp; Web App Vulns</div>
+        <div class="card-desc">Apache hosts DVWA, Mutillidae, phpMyAdmin — vulnerable to SQLi, XSS, command injection, and more.</div>
+        <div class="card-meta">
+          <span class="card-tool">⚡ Nikto / Burp Suite</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="module-card" href="./pages/distccd.html"
+         data-keywords="distccd distcc rce remote code execution daemon misconfiguration metasploit">
+        <div class="card-top">
+          <div class="card-icon icon-critical">DCC</div>
+          <span class="badge badge-critical">Critical</span>
+        </div>
+        <div class="card-name">distccd — GNU Compiler Daemon</div>
+        <div class="card-port">Port 3632/tcp &nbsp;·&nbsp; CVE-2004-2687</div>
+        <div class="card-desc">Misconfigured distcc daemon executes arbitrary commands without validation, leading to remote shell access.</div>
+        <div class="card-meta">
+          <span class="card-tool">⚡ Metasploit</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="about-section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <p class="section-label">Project</p>
+        <h3>About This Lab</h3>
+      </div>
+    </div>
+    <div class="about-grid">
+      <div>
+        <p>This lab is a structured documentation platform for exploiting Metasploitable 2 — an intentionally vulnerable Linux machine designed for penetration testing practice. Every attack performed here was conducted in an isolated, controlled environment.</p>
+        <p style="margin-top:.8rem">The documentation covers the full kill chain: reconnaissance → exploitation → privilege escalation, with screenshots, commands, and blue team mitigations for each service.</p>
+      </div>
+      <div>
+        <p><strong style="color:var(--text-hi)">Ethical Disclaimer:</strong> All techniques demonstrated in this lab are performed on intentionally vulnerable systems in a controlled environment. This content is for educational purposes only. Never apply these techniques without explicit authorization.</p>
+        <div style="margin-top:1.2rem;display:flex;flex-wrap:wrap;gap:.5rem">
+          <span class="pill"><strong>Educational Use Only</strong></span>
+          <span class="pill"><strong>Isolated Lab Environment</strong></span>
+          <span class="pill"><strong>No Real Systems Targeted</strong></span>
         </div>
       </div>
-      <a class="btn btn-outline" href="#modules">Explore Modules</a>
     </div>
-  </header>
+  </div>
+</section>
 
-  <main>
-    <section class="hero container">
-      <h2>Professional Security Lab Documentation</h2>
-      <p>
-        A clean, modular, and report-ready web interface for service enumeration,
-        exploitation workflow, and privilege escalation notes on Metasploitable2.
-      </p>
-      <div class="hero-actions">
-        <a href="#modules" class="btn">Start Learning</a>
-        <a href="#about" class="btn btn-secondary">About Project</a>
-      </div>
-    </section>
-
-    <section id="modules" class="container section">
-      <div class="section-head">
-        <h3>Service Modules</h3>
-        <input id="searchInput" type="text" placeholder="Search module (e.g., SSH, SMB...)" />
-      </div>
-
-      <div class="grid" id="moduleGrid">
-        <a class="card" href="./pages/ftp.html" data-keywords="ftp vsftpd brute force anonymous login">
-          <h4>FTP</h4><p>Enumeration, anonymous access, exploit workflow.</p>
-        </a>
-        <a class="card" href="./pages/ssh.html" data-keywords="ssh medusa brute force credentials privilege escalation">
-          <h4>SSH</h4><p>Bruteforce, login, and post-exploitation notes.</p>
-        </a>
-        <a class="card" href="./pages/smtp.html" data-keywords="smtp user enumeration vrfy">
-          <h4>SMTP</h4><p>Banner grabbing and user enumeration steps.</p>
-        </a>
-        <a class="card" href="./pages/smb.html" data-keywords="smb samba shares enum4linux">
-          <h4>SMB</h4><p>Share discovery, null sessions, exploitation paths.</p>
-        </a>
-        <a class="card" href="./pages/mysql.html" data-keywords="mysql database enumeration credentials">
-          <h4>MySQL</h4><p>Database access and basic query workflow.</p>
-        </a>
-        <a class="card" href="./pages/postgresql.html" data-keywords="postgresql postgres db exploit">
-          <h4>PostgreSQL</h4><p>Service detection, auth checks, escalation hints.</p>
-        </a>
-        <a class="card" href="./pages/http.html" data-keywords="http web nikto dirb">
-          <h4>HTTP</h4><p>Web enumeration, scanning and vulnerability checks.</p>
-        </a>
-        <a class="card" href="./pages/telnet.html" data-keywords="telnet login weak credentials">
-          <h4>Telnet</h4><p>Legacy service risks and shell access notes.</p>
-        </a>
-        <a class="card" href="./pages/distccd.html" data-keywords="distccd rce service exploit">
-          <h4>distccd</h4><p>Service exploitation and remote code execution.</p>
-        </a>
-      </div>
-    </section>
-
-    <section id="about" class="container section about">
-      <h3>About This Project</h3>
-      <p>
-        This lab is designed for educational and ethical security testing in controlled environments.
-        Use it as a portfolio-quality documentation system with clear module separation.
-      </p>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <p>© 2026 Metasploitable2 Lab • Built for Security Learning</p>
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">© 2026 Metasploitable2 Pentest Lab &nbsp;·&nbsp; For educational use only</div>
+    <div class="footer-links">
+      <a href="#overview">Setup</a>
+      <a href="#scan">Nmap</a>
+      <a href="#modules">Modules</a>
     </div>
-  </footer>
+  </div>
+</footer>
 
-  <script src="./assets/js/app.js"></script>
+<!-- LIGHTBOX -->
+<div id="lightbox" class="lightbox-overlay">
+  <button class="lightbox-close" title="Close (Esc)">✕</button>
+  <img src="" alt="Screenshot fullsize" />
+</div>
+
+<script src="./assets/js/app.js"></script>
 </body>
 </html>
