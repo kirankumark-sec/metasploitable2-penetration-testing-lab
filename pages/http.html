@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTTP — Web Application Vulnerabilities | Metasploitable 2 Lab</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text"><h1>Metasploitable 2</h1><p>Penetration Testing Lab</p></div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html#overview">Overview</a>
+      <a class="nav-link" href="../index.html#scan">Nmap Scan</a>
+      <a class="nav-link" href="../index.html#modules">Modules</a>
+    </div>
+    <a class="nav-btn btn" href="../index.html#modules">All Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a><span>/</span>
+    <a href="../index.html#modules">Modules</a><span>/</span>
+    <span style="color:var(--text)">HTTP</span>
+  </div>
+</div>
+
+<div class="module-hero">
+  <div class="container">
+    <div class="module-hero-top">
+      <div class="module-title-wrap">
+        <p class="section-label">Port 80/tcp — HyperText Transfer Protocol</p>
+        <h2>HTTP — Web Application Vulnerabilities</h2>
+        <p class="sub-title">Exploiting Vulnerable Web Apps: DVWA, Mutillidae, phpMyAdmin</p>
+        <div class="overview-pills">
+          <span class="pill">CVE: <strong>Multiple (SQLi, XSS, RCE)</strong></span>
+          <span class="pill">Port: <strong>80/tcp</strong></span>
+          <span class="pill">Impact: <strong>Shell Access / Data Breach</strong></span>
+          <span class="pill">Tool: <strong>Burp Suite / Nikto</strong></span>
+        </div>
+      </div>
+      <span class="badge badge-high" style="font-size:.85rem;padding:.4rem 1rem">High</span>
+    </div>
+    <div class="overview-box">
+      <div class="overview-box-grid">
+        <div><div class="ov-item-label">Service</div><div class="ov-item-value">Apache 2.2.8</div></div>
+        <div><div class="ov-item-label">Attack Type</div><div class="ov-item-value">Web Exploitation</div></div>
+        <div><div class="ov-item-label">MSF Module</div><div class="ov-item-value mono">N/A (Manual/Web Tools)</div></div>
+        <div><div class="ov-item-label">Result</div><div class="ov-item-value" style="color:var(--red)">✓ Shell Access Obtained</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-layout">
+    <main class="content-body">
+
+      <div class="step-section" id="service-overview">
+        <div class="step-label"><div class="step-num">01</div><h3>Vulnerability Overview</h3></div>
+        <p>Metasploitable 2 runs Apache 2.2.8 on port 80, hosting several intentionally vulnerable web applications including <strong>DVWA (Damn Vulnerable Web Application)</strong>, <strong>Mutillidae</strong>, and <strong>phpMyAdmin</strong>. These apps contain common web vulnerabilities such as SQL Injection, Cross-Site Scripting (XSS), and Remote Code Execution (RCE).</p>
+        <div class="callout">
+          These web apps are designed for training and demonstrate real-world vulnerabilities. Exploiting them can lead to shell access, database dumps, or full system compromise.
+        </div>
+      </div>
+
+      <div class="step-section" id="enumeration">
+        <div class="step-label"><div class="step-num">02</div><h3>Service Detection</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nmap</span> <span class="kw">-sV -v -p 80</span> <span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nmap HTTP Service Version Scan</span>
+          </div>
+          <img src="../HTTP/Nmap_HTTP_Service_Scan.png" alt="HTTP Nmap" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="web-scan">
+        <div class="step-label"><div class="step-num">03</div><h3>Web Application Scanning</h3></div>
+        <p>Use Nikto to scan for common web vulnerabilities:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nikto</span> <span class="kw">-h http://&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nikto Web Vulnerability Scan</span>
+          </div>
+          <img src="../HTTP/Nikto_Scan.png" alt="Nikto Scan" loading="lazy" />
+        </div>
+        <p>Nikto will identify vulnerable web apps and potential attack vectors.</p>
+      </div>
+
+      <div class="step-section" id="dvwa">
+        <div class="step-label"><div class="step-num">04</div><h3>Exploiting DVWA</h3></div>
+        <p>Access DVWA at <code>http://&lt;target-ip&gt;/dvwa/</code> (default creds: admin/admin). Exploit vulnerabilities like SQL Injection:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">sql</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmt"># SQL Injection payload</span>
+' OR '1'='1</pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">DVWA SQL Injection Exploit</span>
+          </div>
+          <img src="../HTTP/DVWA_SQLi.png" alt="DVWA SQLi" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="mutillidae">
+        <div class="step-label"><div class="step-num">05</div><h3>Exploiting Mutillidae</h3></div>
+        <p>Access Mutillidae at <code>http://&lt;target-ip&gt;/mutillidae/</code>. Test for XSS and other vulnerabilities.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">html</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmt"># XSS payload</span>
+&lt;script&gt;alert('XSS')&lt;/script&gt;</pre>
+        </div>
+      </div>
+
+      <div class="step-section" id="phpmyadmin">
+        <div class="step-label"><div class="step-num">06</div><h3>phpMyAdmin Access</h3></div>
+        <p>phpMyAdmin is accessible at <code>http://&lt;target-ip&gt;/phpmyadmin/</code>. Default credentials may allow database access.</p>
+      </div>
+
+      <div class="step-section" id="results">
+        <div class="step-label"><div class="step-num">07</div><h3>Results &amp; Impact</h3></div>
+        <div class="results-box">
+          <h4>Outcome</h4>
+          <ul>
+            <li>Identified multiple vulnerable web applications</li>
+            <li>Successfully exploited SQL Injection in DVWA</li>
+            <li>Executed XSS in Mutillidae</li>
+            <li>Gained database access via phpMyAdmin</li>
+            <li>Potential for shell upload and RCE</li>
+          </ul>
+        </div>
+        <div class="mitigation-box">
+          <h4>Detection &amp; Mitigation (Blue Team)</h4>
+          <ul>
+            <li>Remove or secure vulnerable web applications</li>
+            <li>Implement Web Application Firewall (WAF)</li>
+            <li>Use parameterized queries to prevent SQLi</li>
+            <li>Sanitize user inputs to prevent XSS</li>
+            <li>Keep web server and apps updated</li>
+            <li>Monitor web logs for suspicious activity</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+    <aside class="toc">
+      <div class="toc-title">On This Page</div>
+      <a href="#service-overview">Overview</a>
+      <a href="#enumeration">Detection</a>
+      <a href="#web-scan">Web Scanning</a>
+      <a href="#dvwa">DVWA Exploit</a>
+      <a href="#mutillidae">Mutillidae</a>
+      <a href="#phpmyadmin">phpMyAdmin</a>
+      <a href="#results">Results</a>
+    </aside>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">← <a href="../index.html#modules" style="color:var(--cyan)">Back to Modules</a></div>
+    <div class="footer-links"><a href="./smtp.html">← SMTP</a><a href="./smb.html">SMB →</a></div>
+  </div>
+</footer>
+<div id="lightbox" class="lightbox-overlay"><button class="lightbox-close">✕</button><img src="" alt="" /></div>
+<script src="../assets/js/app.js"></script>
+</body>
+</html></content>
+<parameter name="filePath">c:\Users\Digits\Documents\GitHub\metasploitable2-penetration-testing-lab\pages\http.html

