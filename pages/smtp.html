@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMTP — User Enumeration | Metasploitable 2 Lab</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text"><h1>Metasploitable 2</h1><p>Penetration Testing Lab</p></div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html#overview">Overview</a>
+      <a class="nav-link" href="../index.html#scan">Nmap Scan</a>
+      <a class="nav-link" href="../index.html#modules">Modules</a>
+    </div>
+    <a class="nav-btn btn" href="../index.html#modules">All Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a><span>/</span>
+    <a href="../index.html#modules">Modules</a><span>/</span>
+    <span style="color:var(--text)">SMTP</span>
+  </div>
+</div>
+
+<div class="module-hero">
+  <div class="container">
+    <div class="module-hero-top">
+      <div class="module-title-wrap">
+        <p class="section-label">Port 25/tcp — Simple Mail Transfer Protocol</p>
+        <h2>SMTP — User Enumeration &amp; Banner Disclosure</h2>
+        <p class="sub-title">Unauthenticated Username Enumeration via VRFY/EXPN Commands</p>
+        <div class="overview-pills">
+          <span class="pill">CVE: <strong>N/A (Misconfiguration)</strong></span>
+          <span class="pill">Port: <strong>25/tcp</strong></span>
+          <span class="pill">Impact: <strong>Info Disclosure</strong></span>
+          <span class="pill">Tool: <strong>Netcat / Metasploit</strong></span>
+        </div>
+      </div>
+      <span class="badge badge-medium" style="font-size:.85rem;padding:.4rem 1rem">Medium</span>
+    </div>
+    <div class="overview-box">
+      <div class="overview-box-grid">
+        <div><div class="ov-item-label">Service</div><div class="ov-item-value">Postfix smtpd</div></div>
+        <div><div class="ov-item-label">Attack Type</div><div class="ov-item-value">Information Disclosure</div></div>
+        <div><div class="ov-item-label">MSF Module</div><div class="ov-item-value mono">auxiliary/scanner/smtp/smtp_enum</div></div>
+        <div><div class="ov-item-label">Result</div><div class="ov-item-value" style="color:var(--amber)">✓ Valid Users Enumerated</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-layout">
+    <main class="content-body">
+
+      <div class="step-section" id="service-overview">
+        <div class="step-label"><div class="step-num">01</div><h3>Vulnerability Overview</h3></div>
+        <p>SMTP (Simple Mail Transfer Protocol) is used to send email between servers. Metasploitable 2 runs <strong>Postfix smtpd</strong> on port 25. While not directly exploitable for remote code execution, the service leaks sensitive system information through its banner and unauthenticated <code>VRFY</code>/<code>EXPN</code> commands.</p>
+        <div class="callout">
+          VRFY and EXPN allow any unauthenticated client to verify whether a username exists on the system. This is a critical reconnaissance step — valid usernames can fuel SSH/Telnet brute-force attacks.
+        </div>
+      </div>
+
+      <div class="step-section" id="enumeration">
+        <div class="step-label"><div class="step-num">02</div><h3>Service Detection</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nmap</span> <span class="kw">-sV -v -p 25</span> <span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nmap SMTP Service Version Scan</span>
+          </div>
+          <img src="../SMTP/Nmap_SMTP_Service_Scan.png" alt="SMTP Nmap" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="banner">
+        <div class="step-label"><div class="step-num">03</div><h3>Banner Grabbing</h3></div>
+        <p>Connect to port 25 with Netcat to read the SMTP banner, which may reveal the server software and version:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nc</span> <span class="str">&lt;target-ip&gt;</span> <span class="num">25</span>
+<span class="cmt"># Or using telnet:</span>
+<span class="cmd">telnet</span> <span class="str">&lt;target-ip&gt;</span> <span class="num">25</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">SMTP Banner Disclosure — Server Info Revealed</span>
+          </div>
+          <img src="../SMTP/SMTP_Banner.png" alt="SMTP Banner" loading="lazy" />
+        </div>
+        <p>The banner reveals the mail server software, version, and hostname — useful for identifying additional attack vectors.</p>
+      </div>
+
+      <div class="step-section" id="user-enum">
+        <div class="step-label"><div class="step-num">04</div><h3>User Enumeration via VRFY</h3></div>
+        <p>After connecting, use the <code>VRFY</code> and <code>EXPN</code> commands to check if users exist on the system:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">smtp</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmt"># Connect to SMTP</span>
+<span class="cmd">telnet</span> <span class="str">&lt;target-ip&gt;</span> <span class="num">25</span>
+
+<span class="cmt"># Initiate SMTP session</span>
+HELO attacker.com
+
+<span class="cmt"># Verify if these users exist (200 = valid, 550 = invalid)</span>
+VRFY root
+VRFY msfadmin
+VRFY postgres
+VRFY user
+
+<span class="cmt"># Expand mailing list / alias</span>
+EXPN postmaster</pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">VRFY Command — Enumerating Valid System Users</span>
+          </div>
+          <img src="../SMTP/SMTP_User_Enum.png" alt="SMTP User Enumeration" loading="lazy" />
+        </div>
+        <p>A <code>252</code> or <code>250</code> response confirms the username is valid. A <code>550</code> response means no such user exists. Confirmed users can now be targeted in follow-on attacks like SSH/Telnet brute force.</p>
+      </div>
+
+      <div class="step-section" id="open-relay">
+        <div class="step-label"><div class="step-num">05</div><h3>Testing for Open Relay</h3></div>
+        <p>Test whether the server will relay emails to external domains (open relay = potential spam abuse):</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">smtp</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block">MAIL FROM:<span class="str">attacker@evil.com</span>
+RCPT TO:<span class="str">victim@external.com</span>
+DATA
+Subject: Open Relay Test
+
+This is a test message.
+<span class="str">.</span>
+QUIT</pre>
+        </div>
+        <p>If the server accepts the message and attempts delivery to <code>external.com</code>, it's an open relay and can be abused for spam or phishing operations.</p>
+      </div>
+
+      <div class="step-section" id="metasploit">
+        <div class="step-label"><div class="step-num">06</div><h3>Automated Enumeration — Metasploit</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">msfconsole</span>
+<span class="kw">use</span> <span class="pth">auxiliary/scanner/smtp/smtp_enum</span>
+<span class="kw">set</span> RHOSTS <span class="str">&lt;target-ip&gt;</span>
+<span class="kw">set</span> USER_FILE <span class="pth">/usr/share/wordlists/metasploit/unix_users.txt</span>
+<span class="kw">run</span></pre>
+        </div>
+      </div>
+
+      <div class="step-section" id="results">
+        <div class="step-label"><div class="step-num">07</div><h3>Results &amp; Impact</h3></div>
+        <div class="results-box">
+          <h4>Outcome</h4>
+          <ul>
+            <li>SMTP banner revealed server software version and hostname</li>
+            <li>VRFY command confirmed valid system users: <code>msfadmin</code>, <code>root</code>, <code>postgres</code></li>
+            <li>Enumerated users can now be targeted in SSH / Telnet brute-force</li>
+            <li>Open relay risk identified for spam abuse</li>
+          </ul>
+        </div>
+        <div class="mitigation-box">
+          <h4>Detection &amp; Mitigation (Blue Team)</h4>
+          <ul>
+            <li>Disable <code>VRFY</code> and <code>EXPN</code> commands in Postfix: set <code>disable_vrfy_command = yes</code></li>
+            <li>Sanitize banner messages — avoid leaking server version details</li>
+            <li>Configure Postfix to prevent open relay — restrict <code>mynetworks</code></li>
+            <li>Monitor SMTP traffic for anomalous VRFY/EXPN command usage</li>
+            <li>Apply firewall rules to restrict port 25 to known mail servers</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+    <aside class="toc">
+      <div class="toc-title">On This Page</div>
+      <a href="#service-overview">Overview</a>
+      <a href="#enumeration">Detection</a>
+      <a href="#banner">Banner Grab</a>
+      <a href="#user-enum">User Enumeration</a>
+      <a href="#open-relay">Open Relay</a>
+      <a href="#metasploit">Metasploit</a>
+      <a href="#results">Results</a>
+    </aside>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">← <a href="../index.html#modules" style="color:var(--cyan)">Back to Modules</a></div>
+    <div class="footer-links"><a href="./ssh.html">← SSH</a><a href="./telnet.html">Telnet →</a></div>
+  </div>
+</footer>
+<div id="lightbox" class="lightbox-overlay"><button class="lightbox-close">✕</button><img src="" alt="" /></div>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>
