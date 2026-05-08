@@ -3,30 +3,288 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metasploitable2 Lab</title>
+  <meta name="description" content="Metasploitable2 Penetration Testing Lab - Service-wise walkthroughs and evidence." />
+  <title>Metasploitable2 Penetration Testing Lab</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; background:#f7f7f7; }
-    h1 { margin-bottom: 1rem; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
-    a.card {
-      display:block; padding:1rem; background:#fff; border-radius:10px;
-      text-decoration:none; color:#111; border:1px solid #ddd;
+    :root{
+      --bg: #0b1020;
+      --bg-soft: #111933;
+      --card: rgba(255,255,255,.06);
+      --card-border: rgba(255,255,255,.14);
+      --text: #e6ecff;
+      --muted: #b8c2e0;
+      --accent: #63a4ff;
+      --accent-2: #7ef9c6;
+      --danger: #ff8da1;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
     }
-    a.card:hover { border-color:#666; }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1a2a61 0%, transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, #1e3c72 0%, transparent 60%),
+        linear-gradient(145deg, #0a0f1f 0%, #0c1226 45%, #0b1020 100%);
+      line-height:1.6;
+    }
+
+    .container{
+      width:min(1150px, 92%);
+      margin-inline:auto;
+    }
+
+    /* Header */
+    .hero{
+      padding:72px 0 44px;
+      position:relative;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid var(--card-border);
+      border-radius:999px;
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-weight:600;
+      font-size:.85rem;
+      letter-spacing:.2px;
+    }
+
+    .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:linear-gradient(180deg,var(--accent-2),#45d9a2);
+      box-shadow:0 0 18px rgba(126,249,198,.8);
+    }
+
+    h1{
+      margin:18px 0 14px;
+      font-size:clamp(1.9rem, 4vw, 3rem);
+      line-height:1.15;
+      letter-spacing:-.02em;
+      font-weight:800;
+    }
+
+    .sub{
+      max-width:780px;
+      color:var(--muted);
+      font-size:1.02rem;
+    }
+
+    .actions{
+      margin-top:28px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      text-decoration:none;
+      border:none;
+      cursor:pointer;
+      padding:12px 16px;
+      border-radius:12px;
+      font-weight:700;
+      transition:.2s ease;
+      font-size:.95rem;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .btn-primary{
+      color:#071224;
+      background:linear-gradient(135deg,var(--accent),#9cc4ff);
+      box-shadow:0 8px 20px rgba(99,164,255,.35);
+    }
+    .btn-primary:hover{transform:translateY(-1px)}
+
+    .btn-ghost{
+      color:var(--text);
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--card-border);
+    }
+    .btn-ghost:hover{background:rgba(255,255,255,.08)}
+
+    /* Cards grid */
+    .section-title{
+      margin:22px 0 14px;
+      font-size:1.08rem;
+      color:#d2dcff;
+      letter-spacing:.3px;
+      font-weight:700;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+      gap:14px;
+      padding-bottom:42px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--card-border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+      text-decoration:none;
+      color:var(--text);
+      transition:.22s ease;
+      min-height:132px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:auto -30% -70% auto;
+      width:180px;height:180px;border-radius:50%;
+      background:radial-gradient(circle, rgba(99,164,255,.24), transparent 62%);
+      pointer-events:none;
+    }
+
+    .card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(126,249,198,.45);
+    }
+
+    .card h3{
+      margin:0 0 8px;
+      font-size:1.05rem;
+      letter-spacing:.2px;
+    }
+
+    .card p{
+      margin:0;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .tag{
+      margin-top:12px;
+      display:inline-block;
+      font-size:.78rem;
+      font-weight:700;
+      color:#052036;
+      background:linear-gradient(135deg,var(--accent-2),#93ffd8);
+      border-radius:999px;
+      padding:6px 10px;
+    }
+
+    footer{
+      border-top:1px solid var(--card-border);
+      padding:18px 0 28px;
+      color:var(--muted);
+      font-size:.9rem;
+    }
+
+    .warn{
+      color:var(--danger);
+      font-weight:600;
+    }
+
+    code{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:8px;
+      padding:2px 7px;
+      font-size:.83rem;
+    }
   </style>
 </head>
 <body>
-  <h1>Metasploitable2 Penetration Testing Lab</h1>
-  <div class="grid">
-    <a class="card" href="./FTP/README.md">FTP</a>
-    <a class="card" href="./SSH/README.md">SSH</a>
-    <a class="card" href="./SMTP/README.md">SMTP</a>
-    <a class="card" href="./SMB/README.md">SMB</a>
-    <a class="card" href="./MySQL/README.md">MySQL</a>
-    <a class="card" href="./PostgreSQL/README.md">PostgreSQL</a>
-    <a class="card" href="./HTTP/README.md">HTTP</a>
-    <a class="card" href="./Telnet/README.md">Telnet</a>
-    <a class="card" href="./distccd/README.md">distccd</a>
-  </div>
+  <header class="hero container">
+    <span class="badge"><span class="dot"></span> Security Training Environment</span>
+    <h1>Metasploitable2 Penetration Testing Lab</h1>
+    <p class="sub">
+      Structured, service-wise penetration testing notes with screenshots and exploitation workflow.
+      This project is intended for <strong>authorized lab practice only</strong>.
+    </p>
+    <div class="actions">
+      <a class="btn btn-primary" href="./README.md">Open Main README</a>
+      <a class="btn btn-ghost" href="#services">Browse Services</a>
+    </div>
+  </header>
+
+  <main class="container" id="services">
+    <h2 class="section-title">Service Modules</h2>
+
+    <section class="grid">
+      <a class="card" href="./FTP/README.md">
+        <h3>FTP</h3>
+        <p>Enumeration, vulnerable service checks, and exploitation examples.</p>
+        <span class="tag">Port 21</span>
+      </a>
+
+      <a class="card" href="./SSH/README.md">
+        <h3>SSH</h3>
+        <p>Bruteforce methodology, login validation, and privilege escalation notes.</p>
+        <span class="tag">Port 22</span>
+      </a>
+
+      <a class="card" href="./SMTP/README.md">
+        <h3>SMTP</h3>
+        <p>Banner grabbing, user enumeration, and SMTP attack surface analysis.</p>
+        <span class="tag">Port 25</span>
+      </a>
+
+      <a class="card" href="./HTTP/README.md">
+        <h3>HTTP</h3>
+        <p>Web service discovery and web attack workflow documentation.</p>
+        <span class="tag">Port 80</span>
+      </a>
+
+      <a class="card" href="./SMB/README.md">
+        <h3>SMB</h3>
+        <p>SMB enumeration, share analysis, and potential exploit vectors.</p>
+        <span class="tag">Port 139/445</span>
+      </a>
+
+      <a class="card" href="./Telnet/README.md">
+        <h3>Telnet</h3>
+        <p>Legacy remote access testing, credential checks, and escalation path.</p>
+        <span class="tag">Port 23</span>
+      </a>
+
+      <a class="card" href="./MySQL/README.md">
+        <h3>MySQL</h3>
+        <p>Database service enumeration and authentication/privilege review.</p>
+        <span class="tag">Port 3306</span>
+      </a>
+
+      <a class="card" href="./PostgreSQL/README.md">
+        <h3>PostgreSQL</h3>
+        <p>Database attack surface and service-level assessment notes.</p>
+        <span class="tag">Port 5432</span>
+      </a>
+
+      <a class="card" href="./distccd/README.md">
+        <h3>distccd</h3>
+        <p>Remote execution service analysis and exploitation documentation.</p>
+        <span class="tag">Port 3632</span>
+      </a>
+    </section>
+  </main>
+
+  <footer class="container">
+    <div>
+      Built for educational cybersecurity labs • Keep usage legal and ethical.
+      <span class="warn">Never test unauthorized systems.</span>
+    </div>
+  </footer>
 </body>
 </html>
